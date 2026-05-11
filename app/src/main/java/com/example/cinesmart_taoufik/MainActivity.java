@@ -2,8 +2,10 @@ package com.example.cinesmart_taoufik;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private TmdbApi tmdbApi;
     private MovieAdapter adapter;
     private EditText searchEditText;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         Button searchButton = findViewById(R.id.search_button);
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         ChipGroup chipGroup = findViewById(R.id.chip_group_categories);
+        progressBar = findViewById(R.id.progress_bar);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         
@@ -82,19 +86,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchMovies(Call<MovieResponse> call) {
+        progressBar.setVisibility(View.VISIBLE);
         call.enqueue(new Callback<MovieResponse>() {
             @Override
             public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
+                progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     adapter.setMovies(response.body().getMovies());
                 } else {
-                    Toast.makeText(MainActivity.this, "Erreur API", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Erreur API : " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<MovieResponse> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Erreur réseau", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

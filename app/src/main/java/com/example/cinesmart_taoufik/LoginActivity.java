@@ -2,6 +2,7 @@ package com.example.cinesmart_taoufik;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.cinesmart_taoufik.api.AuthApi;
 import com.example.cinesmart_taoufik.models.AuthRequest;
 import com.example.cinesmart_taoufik.models.AuthResponse;
+import com.example.cinesmart_taoufik.utils.SessionManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -22,19 +24,26 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
     private AuthApi authApi;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        sessionManager = new SessionManager(this);
+        
+        // Redirection automatique si déjà connecté
+        if (sessionManager.getUserId() != null) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+        }
+
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
         Button btnLogin = findViewById(R.id.btn_login);
         TextView tvGoToRegister = findViewById(R.id.tv_go_to_register);
 
-        // Configuration de Retrofit pour votre backend Node.js
-        // 10.0.2.2 est l'adresse pour accéder au localhost de votre PC depuis l'émulateur
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://10.0.2.2:3000/") 
                 .addConverterFactory(GsonConverterFactory.create())
@@ -53,6 +62,12 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        // BOUTON DE DEBUG (Optionnel) : Cliquez longuement sur "CineSmart" pour bypasser le login si besoin
+        findViewById(R.id.main_title).setOnLongClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            return true;
+        });
+
         tvGoToRegister.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
@@ -64,17 +79,25 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(LoginActivity.this, "Bienvenue " + response.body().getUser().getName(), Toast.LENGTH_SHORT).show();
+                    // Sauvegarder la session avec le vrai token
+                    sessionManager.saveSession(response.body().getUser().getId(), response.body().getToken());
+
+                    String name = "Utilisateur";
+                    if (response.body().getUser() != null && response.body().getUser().getName() != null) {
+                        name = response.body().getUser().getName();
+                    }
+                    Toast.makeText(LoginActivity.this, "Bienvenue " + name, Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
                     finish();
                 } else {
-                    Toast.makeText(LoginActivity.this, "Email ou mot de passe incorrect", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Erreur : " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<AuthResponse> call, Throwable t) {
-                Toast.makeText(LoginActivity.this, "Erreur serveur : " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("LoginError", t.getMessage());
+                Toast.makeText(LoginActivity.this, "Serveur non atteint. Vérifiez node server.js", Toast.LENGTH_LONG).show();
             }
         });
     }
