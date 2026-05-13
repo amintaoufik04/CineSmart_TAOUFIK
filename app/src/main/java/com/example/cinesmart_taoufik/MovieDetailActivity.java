@@ -1,5 +1,6 @@
 package com.example.cinesmart_taoufik;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -65,11 +66,13 @@ public class MovieDetailActivity extends AppCompatActivity {
         String userId = sessionManager.getUserId();
         String token = sessionManager.getToken();
         if (userId == null || token == null) {
-            Toast.makeText(this, "Connectez-vous pour ajouter des favoris", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
             return;
         }
 
-        FavoriteRequest request = new FavoriteRequest(userId, movie.getId(), movie.getTitle(), movie.getPosterPath());
+        String cleanPosterPath = movie.getPosterPath().replace("https://image.tmdb.org/t/p/w500", "");
+        FavoriteRequest request = new FavoriteRequest(userId, movie.getId(), movie.getTitle(), cleanPosterPath);
         authApi.addFavorite("Bearer " + token, request).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

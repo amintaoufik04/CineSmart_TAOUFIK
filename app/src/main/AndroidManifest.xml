@@ -31,6 +31,8 @@
 
         <activity android:name="com.example.cinesmart_taoufik.MovieDetailActivity" />
 
+        <activity android:name="com.example.cinesmart_taoufik.FavoritesActivity" />
+
     </application>
 
 </manifest>

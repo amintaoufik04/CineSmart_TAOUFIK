@@ -9,9 +9,10 @@
 
     <EditText
         android:id="@+id/search_edit_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="245dp"
+        android:layout_height="62dp"
         android:layout_margin="16dp"
+        android:layout_marginTop="60dp"
         android:hint="Search movies..."
         app:layout_constraintEnd_toStartOf="@+id/search_button"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,13 +20,14 @@
 
     <Button
         android:id="@+id/search_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+        android:layout_width="110dp"
+        android:layout_height="59dp"
+        android:layout_marginEnd="28dp"
         android:text="Search"
         app:layout_constraintBottom_toBottomOf="@+id/search_edit_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/search_edit_text" />
+        app:layout_constraintTop_toTopOf="@+id/search_edit_text"
+        app:layout_constraintVertical_bias="0.0" />
 
     <HorizontalScrollView
         android:id="@+id/category_scroll_view"
@@ -33,7 +35,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:scrollbars="none"
-        app:layout_constraintTop_toBottomOf="@id/search_edit_text">
+        app:layout_constraintTop_toBottomOf="@id/search_edit_text"
+        tools:layout_editor_absoluteX="0dp">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chip_group_categories"
@@ -68,6 +71,26 @@
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
+    <ImageButton
+        android:id="@+id/btn_logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_lock_power_off"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/btn_view_favorites"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Mes Favoris"
+        app:layout_constraintTop_toBottomOf="@id/category_scroll_view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="0dp"
@@ -76,7 +99,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/category_scroll_view" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_view_favorites" />
 
     <ProgressBar
         android:id="@+id/progress_bar"

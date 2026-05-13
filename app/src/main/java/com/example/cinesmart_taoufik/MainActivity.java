@@ -18,6 +18,8 @@ import com.example.cinesmart_taoufik.models.Movie;
 import com.example.cinesmart_taoufik.models.MovieResponse;
 import com.google.android.material.chip.ChipGroup;
 
+import com.example.cinesmart_taoufik.utils.SessionManager;
+
 import java.util.ArrayList;
 
 import retrofit2.Call;
@@ -33,17 +35,35 @@ public class MainActivity extends AppCompatActivity {
     private MovieAdapter adapter;
     private EditText searchEditText;
     private ProgressBar progressBar;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        sessionManager = new SessionManager(this);
+        if (sessionManager.getUserId() == null || sessionManager.getToken() == null) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         searchEditText = findViewById(R.id.search_edit_text);
         Button searchButton = findViewById(R.id.search_button);
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         ChipGroup chipGroup = findViewById(R.id.chip_group_categories);
         progressBar = findViewById(R.id.progress_bar);
+        
+        findViewById(R.id.btn_view_favorites).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, FavoritesActivity.class));
+        });
+
+        findViewById(R.id.btn_logout).setOnClickListener(v -> {
+            sessionManager.logout();
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish();
+        });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         

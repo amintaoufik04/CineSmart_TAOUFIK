@@ -21,4 +21,9 @@ public class FavoriteRequest {
         this.title = title;
         this.posterPath = posterPath;
     }
+
+    public String getUserId() { return userId; }
+    public int getMovieId() { return movieId; }
+    public String getTitle() { return title; }
+    public String getPosterPath() { return posterPath; }
 }

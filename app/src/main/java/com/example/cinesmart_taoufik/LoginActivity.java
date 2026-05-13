@@ -13,6 +13,7 @@ import com.example.cinesmart_taoufik.api.AuthApi;
 import com.example.cinesmart_taoufik.models.AuthRequest;
 import com.example.cinesmart_taoufik.models.AuthResponse;
 import com.example.cinesmart_taoufik.utils.SessionManager;
+import com.google.gson.Gson;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,8 +34,7 @@ public class LoginActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         
-        // Redirection automatique si déjà connecté
-        if (sessionManager.getUserId() != null) {
+        if (sessionManager.getUserId() != null && sessionManager.getToken() != null) {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
             finish();
         }
@@ -62,12 +62,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        // BOUTON DE DEBUG (Optionnel) : Cliquez longuement sur "CineSmart" pour bypasser le login si besoin
-        findViewById(R.id.main_title).setOnLongClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            return true;
-        });
-
         tvGoToRegister.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
@@ -79,25 +73,36 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // Sauvegarder la session avec le vrai token
-                    sessionManager.saveSession(response.body().getUser().getId(), response.body().getToken());
+                    AuthResponse authResponse = response.body();
+                    
+                    String id = authResponse.getUserId();
+                    String token = authResponse.getToken();
 
-                    String name = "Utilisateur";
-                    if (response.body().getUser() != null && response.body().getUser().getName() != null) {
-                        name = response.body().getUser().getName();
+                    if (id != null && token != null) {
+                        sessionManager.saveSession(id, token);
+                        
+                        String name = authResponse.getUser() != null && authResponse.getUser().getName() != null ? authResponse.getUser().getName() : "Utilisateur";
+                        Toast.makeText(LoginActivity.this, "Bienvenue " + name, Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                        finish();
+                    } else {
+                        Log.e("LoginError", "Champs manquants - ID: " + id + ", Token: " + (token != null ? "Présent" : "Nul"));
+                        Toast.makeText(LoginActivity.this, "Données incomplètes : vérifiez les logs", Toast.LENGTH_LONG).show();
                     }
-                    Toast.makeText(LoginActivity.this, "Bienvenue " + name, Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                    finish();
                 } else {
-                    Toast.makeText(LoginActivity.this, "Erreur : " + response.code(), Toast.LENGTH_SHORT).show();
+                    String errorBody = "";
+                    try {
+                        if (response.errorBody() != null) errorBody = response.errorBody().string();
+                    } catch (Exception e) { e.printStackTrace(); }
+                    Log.e("LoginError", "Code: " + response.code() + " Error: " + errorBody);
+                    Toast.makeText(LoginActivity.this, "Identifiants incorrects ou erreur serveur", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<AuthResponse> call, Throwable t) {
                 Log.e("LoginError", t.getMessage());
-                Toast.makeText(LoginActivity.this, "Serveur non atteint. Vérifiez node server.js", Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginActivity.this, "Erreur réseau : " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
