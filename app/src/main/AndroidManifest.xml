@@ -37,6 +37,8 @@
 
         <activity android:name="com.example.cinesmart_taoufik.NearbyCinemasActivity" />
 
+        <activity android:name="com.example.cinesmart_taoufik.ChatbotActivity" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />

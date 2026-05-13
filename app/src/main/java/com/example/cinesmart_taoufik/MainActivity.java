@@ -59,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, FavoritesActivity.class));
         });
 
+        findViewById(R.id.btn_ask_me).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, ChatbotActivity.class));
+        });
+
         findViewById(R.id.btn_logout).setOnClickListener(v -> {
             sessionManager.logout();
             startActivity(new Intent(MainActivity.this, LoginActivity.class));

@@ -59,6 +59,8 @@ public class NearbyCinemasActivity extends AppCompatActivity implements OnMapRea
         tvStatus = findViewById(R.id.tv_status);
         progressBar = findViewById(R.id.progress_bar);
 
+        findViewById(R.id.btn_back_fav).setOnClickListener(v -> finish());
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         locationPermissionLauncher = registerForActivityResult(
