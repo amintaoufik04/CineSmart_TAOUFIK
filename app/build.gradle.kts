@@ -49,6 +49,12 @@ dependencies {
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
 
+    // Google Play Services Location
+    implementation(libs.play.services.location)
+
+    // Google Maps SDK
+    implementation(libs.play.services.maps)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

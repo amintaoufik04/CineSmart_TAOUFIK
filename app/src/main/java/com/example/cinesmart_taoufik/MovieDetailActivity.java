@@ -46,6 +46,12 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
+        Button btnMap = findViewById(R.id.btn_map);
+        btnMap.setOnClickListener(v -> {
+            Intent intent = new Intent(MovieDetailActivity.this, NearbyCinemasActivity.class);
+            startActivity(intent);
+        });
+
         Movie movie = (Movie) getIntent().getSerializableExtra("movie");
 
         if (movie != null) {
