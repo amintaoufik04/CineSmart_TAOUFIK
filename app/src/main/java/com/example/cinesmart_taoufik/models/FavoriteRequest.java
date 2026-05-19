@@ -15,15 +15,25 @@ public class FavoriteRequest {
     @SerializedName("posterPath")
     private String posterPath;
 
-    public FavoriteRequest(String userId, int movieId, String title, String posterPath) {
+    @SerializedName("overview")
+    private String overview;
+
+    @SerializedName("voteAverage")
+    private double voteAverage;
+
+    public FavoriteRequest(String userId, int movieId, String title, String posterPath, String overview, double voteAverage) {
         this.userId = userId;
         this.movieId = movieId;
         this.title = title;
         this.posterPath = posterPath;
+        this.overview = overview;
+        this.voteAverage = voteAverage;
     }
 
     public String getUserId() { return userId; }
     public int getMovieId() { return movieId; }
     public String getTitle() { return title; }
     public String getPosterPath() { return posterPath; }
+    public String getOverview() { return overview; }
+    public double getVoteAverage() { return voteAverage; }
 }

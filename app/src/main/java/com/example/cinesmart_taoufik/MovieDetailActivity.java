@@ -78,7 +78,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         }
 
         String cleanPosterPath = movie.getPosterPath().replace("https://image.tmdb.org/t/p/w500", "");
-        FavoriteRequest request = new FavoriteRequest(userId, movie.getId(), movie.getTitle(), cleanPosterPath);
+        FavoriteRequest request = new FavoriteRequest(userId, movie.getId(), movie.getTitle(), cleanPosterPath, movie.getOverview(), movie.getVoteAverage());
         authApi.addFavorite("Bearer " + token, request).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

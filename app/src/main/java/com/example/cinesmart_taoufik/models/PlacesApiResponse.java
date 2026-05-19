@@ -10,6 +10,10 @@ public class PlacesApiResponse {
     @SerializedName("status")
     private String status;
 
+    @SerializedName("error_message")
+    private String errorMessage;
+
     public List<PlaceResult> getResults() { return results; }
     public String getStatus() { return status; }
+    public String getErrorMessage() { return errorMessage; }
 }

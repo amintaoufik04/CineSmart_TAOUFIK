@@ -10,8 +10,9 @@ public interface GooglePlacesApi {
     @GET("maps/api/place/nearbysearch/json")
     Call<PlacesApiResponse> getNearbyCinemas(
             @Query("location") String location,
-            @Query("radius") int radius,
+            @Query("radius") Integer radius,
             @Query("type") String type,
+            @Query("keyword") String keyword,
             @Query("key") String apiKey
     );
 }

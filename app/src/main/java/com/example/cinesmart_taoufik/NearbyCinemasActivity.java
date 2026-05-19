@@ -19,6 +19,9 @@ import com.example.cinesmart_taoufik.models.PlaceResult;
 import com.example.cinesmart_taoufik.models.PlacesApiResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -26,7 +29,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.CancellationTokenSource;
 
@@ -108,22 +110,38 @@ public class NearbyCinemasActivity extends AppCompatActivity implements OnMapRea
             return;
         }
 
-        tvStatus.setText("Obtention de votre position...");
+        tvStatus.setText("Recherche de votre position...");
         progressBar.setVisibility(View.VISIBLE);
+
+        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
+                .setMinUpdateIntervalMillis(2000)
+                .setMaxUpdates(1) // On s'arrête dès qu'on a une position
+                .build();
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult != null && locationResult.getLastLocation() != null) {
+                    updateUIWithLocation(locationResult.getLastLocation());
+                } else {
+                    tvStatus.setText("Localisation impossible. Vérifiez vos paramètres.");
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
+        }, getMainLooper());
+    }
+
+    private void requestFreshLocation() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) return;
 
         CancellationTokenSource tokenSource = new CancellationTokenSource();
         fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, tokenSource.getToken())
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
-                        LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 14f));
-                        googleMap.addMarker(new MarkerOptions()
-                                .position(userLatLng)
-                                .title("Ma position")
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-                        searchNearbyCinemas(userLatLng);
+                        updateUIWithLocation(location);
                     } else {
-                        tvStatus.setText("Impossible d'obtenir votre position. Activez le GPS.");
+                        tvStatus.setText("Localisation introuvable. Vérifiez votre GPS.");
                         progressBar.setVisibility(View.GONE);
                     }
                 })
@@ -133,9 +151,22 @@ public class NearbyCinemasActivity extends AppCompatActivity implements OnMapRea
                 });
     }
 
+    private void updateUIWithLocation(android.location.Location location) {
+        LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        googleMap.clear(); // Nettoie les anciens marqueurs
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 10f));
+        googleMap.addMarker(new MarkerOptions()
+                .position(userLatLng)
+                .title("Ma position")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        
+        searchNearbyCinemas(userLatLng);
+    }
+
     private void searchNearbyCinemas(LatLng userLatLng) {
         tvStatus.setText("Recherche des cinémas à proximité...");
         progressBar.setVisibility(View.VISIBLE);
+        cinemasListLayout.removeAllViews(); // Vider la liste avant nouvelle recherche
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://maps.googleapis.com/")
@@ -146,21 +177,31 @@ public class NearbyCinemasActivity extends AppCompatActivity implements OnMapRea
 
         String location = userLatLng.latitude + "," + userLatLng.longitude;
 
-        placesApi.getNearbyCinemas(location, 5000, "movie_theater", apiKey)
+        placesApi.getNearbyCinemas(location, 50000, null, "cinema", apiKey)
                 .enqueue(new Callback<PlacesApiResponse>() {
                     @Override
                     public void onResponse(Call<PlacesApiResponse> call, Response<PlacesApiResponse> response) {
                         progressBar.setVisibility(View.GONE);
                         if (response.isSuccessful() && response.body() != null) {
-                            List<PlaceResult> results = response.body().getResults();
+                            PlacesApiResponse apiResponse = response.body();
+                            List<PlaceResult> results = apiResponse.getResults();
+                            String status = apiResponse.getStatus();
+
                             if (results != null && !results.isEmpty()) {
-                                int count = Math.min(results.size(), 5);
+                                int count = Math.min(results.size(), 20);
                                 tvStatus.setText(count + " cinéma(s) trouvé(s)");
                                 for (int i = 0; i < count; i++) {
                                     addCinemaMarkerAndListItem(results.get(i), i);
                                 }
                             } else {
-                                tvStatus.setText("Aucun cinéma trouvé à proximité");
+                                if ("ZERO_RESULTS".equals(status)) {
+                                    tvStatus.setText("Aucun cinéma trouvé (Rayon: 50km)");
+                                } else if ("REQUEST_DENIED".equals(status)) {
+                                    String detail = apiResponse.getErrorMessage() != null ? apiResponse.getErrorMessage() : "Vérifiez la clé API dans Google Cloud Console";
+                                    tvStatus.setText("Erreur: Accès refusé (" + detail + ")");
+                                } else {
+                                    tvStatus.setText("Erreur Google: " + status);
+                                }
                             }
                         } else {
                             tvStatus.setText("Erreur API: " + response.code());

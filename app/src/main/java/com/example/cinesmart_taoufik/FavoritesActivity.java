@@ -90,8 +90,8 @@ public class FavoritesActivity extends AppCompatActivity {
                                 fav.getMovieId(),
                                 fav.getTitle(),
                                 path,
-                                "No overview available",
-                                0.0
+                                fav.getOverview() != null ? fav.getOverview() : "No overview available",
+                                fav.getVoteAverage()
                         ));
                     }
                     adapter.setMovies(favoriteMovies);
