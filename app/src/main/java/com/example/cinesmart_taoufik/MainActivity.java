@@ -21,7 +21,11 @@ import com.google.android.material.chip.ChipGroup;
 import com.example.cinesmart_taoufik.utils.SessionManager;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -30,7 +34,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String API_KEY = "a71c7e06762048e24e3988cd4bcb22d4";
+    private static final String API_KEY = "bf937f00af98d6938a4662fdcb4b9fd4";
     private TmdbApi tmdbApi;
     private MovieAdapter adapter;
     private EditText searchEditText;
@@ -80,8 +84,28 @@ public class MainActivity extends AppCompatActivity {
         });
         recyclerView.setAdapter(adapter);
 
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .addInterceptor(logging)
+                .addInterceptor(chain -> {
+                    Request original = chain.request();
+                    Request request = original.newBuilder()
+                            .header("Accept", "application/json")
+                            .header("Accept-Encoding", "identity")
+                            .method(original.method(), original.body())
+                            .build();
+                    return chain.proceed(request);
+                })
+                .build();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.themoviedb.org/3/")
+                .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

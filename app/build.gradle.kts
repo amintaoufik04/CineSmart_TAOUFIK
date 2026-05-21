@@ -55,8 +55,9 @@ dependencies {
     // Google Maps SDK
     implementation(libs.play.services.maps)
 
-    // OkHttp for Ollama
+    // OkHttp
     implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

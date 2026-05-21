@@ -26,7 +26,7 @@
             android:id="@+id/tv_cinemas_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cinémas à proximité"
+            android:text="Position"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -48,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Recherche des cinémas à proximité..."
+            android:text="Recherche en cours..."
             android:textSize="13sp" />
 
         <ProgressBar
